@@ -23,7 +23,7 @@ on your keyboard to control the media playback in your browser.
 Clone this repository:
 
 ```
-git clone https://github.com/MediaMind
+git clone https://github.com/StephanvanSchaik/MediaMind
 ```
 
 Build the native application:
