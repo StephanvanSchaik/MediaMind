@@ -56,3 +56,4 @@ npm i
 # Installation
 
  * [Mozilla Firefox](./README.Firefox.md)
+ * [Google Chrome](./README.Chrome.md)
