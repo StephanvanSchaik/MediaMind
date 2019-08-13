@@ -3,6 +3,9 @@ use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+#[cfg(target_os = "windows")] use winreg::enums::*;
+#[cfg(target_os = "windows")] use winreg::RegKey;
+
 extern crate dirs;
 use serde::{Deserialize, Serialize};
 extern crate serde_json;
@@ -79,22 +82,31 @@ fn main() -> io::Result<()> {
         chrome_manifest.allowed_origins.push(args[2].clone());
     }
 
-    let browsers = vec!(
-        (".config/google-chrome", "NativeMessagingHosts",
-            Manifest::Chrome(chrome_manifest.clone())),
-        (".config/google-chrome-beta", "NativeMessagingHosts",
-            Manifest::Chrome(chrome_manifest.clone())),
-        (".config/google-chrome-unstable", "NativeMessagingHosts",
-            Manifest::Chrome(chrome_manifest.clone())),
-        (".config/chromium", "NativeMessagingHosts",
-            Manifest::Chrome(chrome_manifest.clone())),
-        (".mozilla", "native-messaging-hosts",
-            Manifest::Firefox(firefox_manifest.clone())),
-    );
+    let browsers = if cfg!(target_os = "windows") {
+        vec!(
+            ("Google/Chrome", "NativeMessagingHosts",
+                Manifest::Chrome(chrome_manifest.clone())),
+            ("Mozilla", "NativeMessagingHosts",
+                Manifest::Firefox(firefox_manifest.clone())),
+        )
+    } else {
+        vec!(
+            (".config/google-chrome", "NativeMessagingHosts",
+                Manifest::Chrome(chrome_manifest.clone())),
+            (".config/google-chrome-beta", "NativeMessagingHosts",
+                Manifest::Chrome(chrome_manifest.clone())),
+            (".config/google-chrome-unstable", "NativeMessagingHosts",
+                Manifest::Chrome(chrome_manifest.clone())),
+            (".config/chromium", "NativeMessagingHosts",
+                Manifest::Chrome(chrome_manifest.clone())),
+            (".mozilla", "native-messaging-hosts",
+                Manifest::Firefox(firefox_manifest.clone())),
+        )
+    };
 
     for (browser, subpath, mut manifest) in browsers {
-        let mut path: PathBuf = if cfg!(platform_os = "windows") {
-            dirs::config_dir().unwrap()
+        let mut path: PathBuf = if cfg!(target_os = "windows") {
+            dirs::data_local_dir().unwrap()
         } else {
             dirs::home_dir().unwrap()
         };
@@ -111,7 +123,7 @@ fn main() -> io::Result<()> {
             fs::create_dir_all(path.as_path())?;
         }
 
-        if cfg!(platform_os = "windows") {
+        if cfg!(target_os = "windows") {
             let mut new_exec_path: PathBuf = path.clone();
 
             new_exec_path.push("media_mind");
@@ -130,6 +142,22 @@ fn main() -> io::Result<()> {
 
         println!("writing manifest to {}", path.display());
         write_manifest(path.as_path(), manifest)?;
+
+        if cfg!(target_os = "windows") {
+            let hlm = RegKey::predef(HKEY_LOCAL_MACHINE);
+
+            let mut reg_path: PathBuf = PathBuf::new();
+
+            reg_path.push("Software".to_string());
+            reg_path.push(browser);
+            reg_path.push("NativeMessagingHosts".to_string());
+            reg_path.push("com.synkhronix.media_mind".to_string());
+
+            let (key, _) = hlm.create_subkey(reg_path.as_path())?;
+
+            println!("setting registry key {} to {}", reg_path.display(), path.display());
+            key.set_value("", &path.as_path().to_str().unwrap().to_string())?;
+        }
     }
 
     Ok(())
