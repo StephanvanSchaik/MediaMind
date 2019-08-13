@@ -3,6 +3,11 @@
 MediaMind is a WebExtension add-on that allows you to use the multimedia keys
 on your keyboard to control the media playback in your browser.
 
+# Supported platforms
+
+ * Microsoft Windows
+ * Linux
+
 # Supported browsers
 
  * Mozilla Firefox 64.0 or later
