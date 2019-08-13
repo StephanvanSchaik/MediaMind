@@ -84,7 +84,7 @@ fn main() -> io::Result<()> {
 
     let browsers = if cfg!(target_os = "windows") {
         vec!(
-            ("Google/Chrome", "NativeMessagingHosts",
+            ("Google\\Chrome", "NativeMessagingHosts",
                 Manifest::Chrome(chrome_manifest.clone())),
             ("Mozilla", "NativeMessagingHosts",
                 Manifest::Firefox(firefox_manifest.clone())),
@@ -126,7 +126,11 @@ fn main() -> io::Result<()> {
         if cfg!(target_os = "windows") {
             let mut new_exec_path: PathBuf = path.clone();
 
-            new_exec_path.push("media_mind");
+            if cfg!(target_os = "windows") {
+                new_exec_path.push("media_mind.exe");
+            } else {
+                new_exec_path.push("media_mind");
+            }
 
             fs::copy(exec_path.as_path(), new_exec_path.as_path())?;
 
