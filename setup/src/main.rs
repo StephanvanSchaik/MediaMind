@@ -111,6 +111,21 @@ fn main() -> io::Result<()> {
             fs::create_dir_all(path.as_path())?;
         }
 
+        if cfg!(platform_os = "windows") {
+            let mut new_exec_path: PathBuf = path.clone();
+
+            new_exec_path.push("media_mind");
+
+            fs::copy(exec_path.as_path(), new_exec_path.as_path())?;
+
+            match &mut manifest {
+                Manifest::Chrome(manifest) =>
+                    manifest.path = new_exec_path.as_path().to_str().unwrap().to_string(),
+                Manifest::Firefox(manifest) =>
+                    manifest.path = new_exec_path.as_path().to_str().unwrap().to_string(),
+            };
+        }
+
         path.push("com.synkhronix.media_mind.json");
 
         println!("writing manifest to {}", path.display());
