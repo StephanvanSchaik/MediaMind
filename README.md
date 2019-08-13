@@ -39,6 +39,13 @@ cd native
 cargo build --release
 ```
 
+Build the setup assistant:
+
+```
+cd setup
+cargo build --release
+```
+
 Installing the dependencies for building the web extension:
 
 ```
@@ -46,18 +53,6 @@ cd webext
 npm i
 ```
 
-Building the web extension for Google Chrome:
-
-```
-npm run build chrome
-```
-
-Building the web extension for Mozilla Firefox:
-
-```
-npm run build firefox
-```
-
 # Installation
 
-TODO
+ * [Mozilla Firefox](./README.Firefox.md)
