@@ -1,0 +1,11 @@
+[package]
+name = "media_mind_setup"
+version = "0.1.0"
+authors = ["Stephan van Schaik <stephan@synkhronix.com>"]
+edition = "2018"
+
+[dependencies]
+dirs = "2.0.2"
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+byteorder = "1"
