@@ -1,0 +1,32 @@
+[package]
+name = "media_mind"
+version = "0.1.0"
+authors = ["Stephan van Schaik <stephan@synkhronix.com>"]
+edition = "2018"
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+byteorder = "1"
+
+[target.'cfg(target_os = "windows")'.dependencies.winapi]
+version = "0.3.7"
+features = [
+	"consoleapi",
+	"errhandlingapi",
+	"handleapi",
+	"memoryapi",
+	"processthreadsapi",
+	"profileapi",
+	"psapi",
+	"synchapi",
+	"tlhelp32",
+	"winbase",
+	"wingdi",
+	"winerror",
+	"winuser",
+]
+
+[target.'cfg(target_os = "linux")'.dependencies]
+mpris-player = "0.4.0"
+glib = "0.8.0"
