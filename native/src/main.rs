@@ -1,16 +1,19 @@
 use std::io::{self, Read, Write};
 use std::str;
-use std::sync::Arc;
 use std::thread;
 
 use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 use serde::{Deserialize, Serialize};
 
 #[cfg(target_os = "linux")]
+use std::sync::Arc;
+#[cfg(target_os = "linux")]
 use glib;
 #[cfg(target_os = "linux")]
 use mpris_player::{Metadata, MprisPlayer, PlaybackStatus};
 
+#[cfg(target_os = "windows")]
+use std::{mem, ptr};
 #[cfg(target_os = "windows")]
 use winapi::shared::minwindef::*;
 #[cfg(target_os = "windows")]
@@ -22,17 +25,6 @@ enum PlaybackStatus {
     Playing,
     Paused,
     Stopped,
-}
-
-#[cfg(target_os = "windows")]
-impl PlaybackStatus {
-    pub fn value(&self) -> String {
-        match *self {
-            PlaybackStatus::Playing => "Playing".to_string(),
-            PlaybackStatus::Paused => "Paused".to_string(),
-            PlaybackStatus::Stopped => "Stopped".to_string(),
-        }
-    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -65,11 +57,13 @@ enum Command {
     },
 }
 
+#[cfg(target_os = "linux")]
 #[derive(Debug, Clone)]
 struct Player {
     mpris: Arc<MprisPlayer>,
 }
 
+#[cfg(target_os = "linux")]
 impl Player {
     fn new() -> Self {
         let mpris = MprisPlayer::new(
@@ -150,6 +144,7 @@ fn write(data: Command) -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
+#[cfg(target_os = "linux")]
 fn main() -> Result<(), Box<std::error::Error>> {
     // Aquire the main context so we can schedule stuff
     glib::MainContext::default().acquire();
