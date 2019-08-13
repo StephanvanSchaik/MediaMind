@@ -22,6 +22,7 @@ on your keyboard to control the media playback in your browser.
 
  * Rust and Cargo
  * `npm`
+ * `npx` (run `npm install -g npx`)
 
 # Building
 
