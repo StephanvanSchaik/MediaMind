@@ -92,8 +92,12 @@ fn main() -> io::Result<()> {
             Manifest::Firefox(firefox_manifest.clone())),
     );
 
-    for (browser, subpath, manifest) in browsers {
-        let mut path: PathBuf = dirs::home_dir().unwrap();
+    for (browser, subpath, mut manifest) in browsers {
+        let mut path: PathBuf = if cfg!(platform_os = "windows") {
+            dirs::config_dir().unwrap()
+        } else {
+            dirs::home_dir().unwrap()
+        };
 
         path.push(browser);
 
