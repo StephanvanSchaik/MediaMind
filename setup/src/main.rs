@@ -7,8 +7,8 @@ extern crate dirs;
 use serde::{Deserialize, Serialize};
 extern crate serde_json;
 
-#[derive(Serialize, Deserialize)]
-struct Manifest {
+#[derive(Clone, Serialize, Deserialize)]
+struct ChromeManifest {
     name: String,
     description: String,
     path: String,
@@ -16,8 +16,27 @@ struct Manifest {
     allowed_origins: Vec<String>,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+struct FirefoxManifest {
+    name: String,
+    description: String,
+    path: String,
+    r#type: String,
+    allowed_extensions: Vec<String>,
+}
+
+#[derive(Clone)]
+enum Manifest {
+    Chrome(ChromeManifest),
+    Firefox(FirefoxManifest),
+}
+
 fn write_manifest(path: &Path, manifest: Manifest) -> io::Result<()> {
-    let data: String = serde_json::to_string(&manifest)?;
+    let data: String = match manifest {
+        Manifest::Chrome(data) => serde_json::to_string(&data)?,
+        Manifest::Firefox(data) => serde_json::to_string(&data)?
+    };
+
     fs::write(path, data)?;
 
     Ok(())
@@ -40,15 +59,40 @@ fn main() -> io::Result<()> {
         }
     };
 
+    let firefox_manifest = FirefoxManifest {
+        name: "com.synkhronix.media_mind".to_owned(),
+        description: "Allows you to use the multimedia keys of your keyboard to control media playback.".to_owned(),
+        path: exec_path.to_str().unwrap().to_string(),
+        r#type: "stdio".to_owned(),
+        allowed_extensions: vec!("media-mind@synkhronix.com".to_owned()),
+    };
+
+    let mut chrome_manifest = ChromeManifest {
+        name: "com.synkhronix.media_mind".to_owned(),
+        description: "Allows you to use the multimedia keys of your keyboard to control media playback.".to_owned(),
+        path: exec_path.to_str().unwrap().to_string(),
+        r#type: "stdio".to_owned(),
+        allowed_origins: vec!(),
+    };
+
+    if args.len() > 2 {
+        chrome_manifest.allowed_origins.push(args[2].clone());
+    }
+
     let browsers = vec!(
-        (".config/google-chrome", "NativeMessagingHosts", true),
-        (".config/google-chrome-beta", "NativeMessagingHosts", true),
-        (".config/google-chrome-unstable", "NativeMessagingHosts", true),
-        (".config/chromium", "NativeMessagingHosts", true),
-        (".mozilla", "native-messaging-hosts", false),
+        (".config/google-chrome", "NativeMessagingHosts",
+            Manifest::Chrome(chrome_manifest.clone())),
+        (".config/google-chrome-beta", "NativeMessagingHosts",
+            Manifest::Chrome(chrome_manifest.clone())),
+        (".config/google-chrome-unstable", "NativeMessagingHosts",
+            Manifest::Chrome(chrome_manifest.clone())),
+        (".config/chromium", "NativeMessagingHosts",
+            Manifest::Chrome(chrome_manifest.clone())),
+        (".mozilla", "native-messaging-hosts",
+            Manifest::Firefox(firefox_manifest.clone())),
     );
 
-    for (browser, subpath, need_ext_id) in browsers {
+    for (browser, subpath, manifest) in browsers {
         let mut path: PathBuf = dirs::home_dir().unwrap();
 
         path.push(browser);
@@ -63,25 +107,7 @@ fn main() -> io::Result<()> {
             fs::create_dir_all(path.as_path())?;
         }
 
-        path.push("com.synkhronix.media_mind");
-
-        let mut manifest = Manifest {
-            name: "com.synkhronix.media_mind".to_owned(),
-            description: "Allows you to use the multimedia keys of your keyboard to control media playback.".to_owned(),
-            path: exec_path.to_str().unwrap().to_string(),
-            r#type: "stdio".to_owned(),
-            allowed_origins: vec!(),
-        };
-
-        if !need_ext_id {
-            manifest.allowed_origins.push("com.synkhronix.media_mind".to_string());
-        } else if args.len() > 2 {
-            manifest.allowed_origins.push(args[2].clone());
-        }
-
-        if manifest.allowed_origins.is_empty() {
-            continue;
-        }
+        path.push("com.synkhronix.media_mind.json");
 
         println!("writing manifest to {}", path.display());
         write_manifest(path.as_path(), manifest)?;
