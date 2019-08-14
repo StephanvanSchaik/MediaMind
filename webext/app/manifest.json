@@ -39,6 +39,15 @@
 				"common.js",
 				"sites/youtube.js"
 			]
+		},
+		{
+			"matches": [
+				"*://*.soundcloud.com/*"
+			],
+			"js": [
+				"common.js",
+				"sites/soundcloud.js"
+			]
 		}
 	],
 
