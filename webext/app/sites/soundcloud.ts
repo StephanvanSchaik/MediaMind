@@ -8,30 +8,35 @@ class SoundCloudPlayer extends Player {
 	}
 
 	init(): void {
-		this.buttons = document.querySelector('.playControls');
+		let playControls = document.querySelector('.playControls');
 
-		if (this.buttons == null) {
+		if (playControls == null) {
 			console.error('no element ".playControls"');
 			return;
 		}
 
+		this.buttons = playControls.querySelector('.playControls__elements');
+
+		if (this.buttons == null) {
+			console.error('no element ".playControls__elements"');
+			return;
+		}
+
+		this.set({
+			can_go_next: true,
+			can_go_previous: true
+		});
+
 		let updateButton = (button: Element) => {
-			if (button.classList.contains('playControls__play playing')) {
-				if (this.info.status != "Paused") {
-					this.setPaused();
-				}
-			} else if (button.classList.contains('playControls__play')) {
-				if (this.info.status != "Playing") {
+			if (button.classList.contains('playControls__play') &&
+				button.classList.contains('playing')) {
+				if (this.info.status != 'Playing') {
 					this.setPlaying();
 				}
-			} else if (button.classList.contains('playControls__next')) {
-				this.set({
-					can_go_next: true
-				});
-			} else if (button.classList.contains('playControls__prev')) {
-				this.set({
-					can_go_previous: true
-				});
+			} else if (button.classList.contains('playControls__play')) {
+				if (this.info.status != 'Paused') {
+					this.setPaused();
+				}
 			}
 		};
 
