@@ -7,7 +7,7 @@
 	"author": "Stephan van Schaik <stephan@synkhronix.com>",
 	"homepage_url": "https://github.com/StephanvanSchaik/MediaMind",
 
-	"applications": {
+	"__firefox__applications": {
 		"gecko": {
 			"id": "media-mind@synkhronix.com",
 			"strict_min_version": "64.0"
