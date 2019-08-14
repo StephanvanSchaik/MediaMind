@@ -1,29 +1,31 @@
 import { Player } from '../common';
 
 class SpotifyPlayer extends Player {
-	buttons: Element;
+	buttons: Element | null = null;
 
 	constructor() {
 		super("spotify");
 	}
 
 	init(): void {
-		let main = document.getElementById('main');
-		let nowPlayingBarLeft: Element = document.querySelector('.now-playing-bar__left');
+		let nowPlayingBarLeft: Element | null =
+			document.querySelector('.now-playing-bar__left');
 
 		if (nowPlayingBarLeft == null) {
-			this.waitForElement(main, (el) => {
-				return el.nodeName == 'DIV' && el.classList.contains('Root');
-			}, () => {
-				this.addMainObserver(document.getElementsByClassName('now-playing-bar__left')[0] as Element);
-			});
-		} else {
-			this.addMainObserver(nowPlayingBarLeft);
+			console.error('no element ".now-player-bar__left"');
+			return;
 		}
+
+		this.addMainObserver(nowPlayingBarLeft);
 	}
 
 	addMainObserver(nowPlayingBarLeft: Element) {
 		this.buttons = document.querySelector('#main .player-controls__buttons');
+
+		if (this.buttons == null) {
+			console.error('no element "#main .player-controls__buttons"');
+			return;
+		}
 
 		let updateButton = (button: Element) => {
 			if (button.classList.contains('spoticon-play-16')) {
@@ -78,9 +80,13 @@ class SpotifyPlayer extends Player {
 
 			mutations.forEach((mutation) => {
 				if (mutation.type == 'characterData') {
+					if (mutation.target.parentElement == null) {
+						return;
+					}
+
 					if (mutation.target.parentElement.matches('.track-info__name a')) {
 						this.set({
-							title: mutation.target.textContent
+							title: mutation.target.textContent || undefined
 						});
 					}
 
@@ -93,16 +99,18 @@ class SpotifyPlayer extends Player {
 					if (target.classList.contains('cover-art-image-loaded')) {
 						let style = window.getComputedStyle(target, null);
 
-						this.set({
-							art_url: style.backgroundImage.slice(4, -1).replace(/"/g, "")
-						});
+						if (style.backgroundImage) {
+							this.set({
+								art_url: style.backgroundImage.slice(4, -1).replace(/"/g, "")
+							});
+						}
 					}
 				}
 			});
 
 			if (updateArtists) {
 				this.set({
-					artists: [...el.querySelectorAll('div.track-info > div.track-info__artists a')].map(x => x.textContent)
+					artists: [...el.querySelectorAll('div.track-info > div.track-info__artists a')].map(x => x.textContent).filter((x): x is string => x != null)
 				});
 			}
 		});
@@ -114,13 +122,24 @@ class SpotifyPlayer extends Player {
 			subtree: true
 		});
 
+		let title = el.querySelector('.track-info__name a');
+
+		if (title != null && title.textContent != null) {
+			this.set({
+				title: title.textContent
+			});
+		}
+
 		this.set({
-			title: el.querySelector('.track-info__name a').textContent,
-			artists: [...el.querySelectorAll('div.track-info > div.track-info__artists a')].map(x => x.textContent)
+			artists: [...el.querySelectorAll('div.track-info > div.track-info__artists a')].map(x => x.textContent).filter((x): x is string => x != null)
 		});
 	}
 
 	play(): void {
+		if (this.buttons == null) {
+			return;
+		}
+
 		let button = (this.buttons.querySelector('.spoticon-play-16') as HTMLElement);
 
 		if (button) {
@@ -129,6 +148,10 @@ class SpotifyPlayer extends Player {
 	}
 
 	pause(): void {
+		if (this.buttons == null) {
+			return;
+		}
+
 		let button = (this.buttons.querySelector('.spoticon-pause-16') as HTMLElement);
 
 		if (button) {
@@ -137,6 +160,10 @@ class SpotifyPlayer extends Player {
 	}
 
 	playPause(): void {
+		if (this.buttons == null) {
+			return;
+		}
+
 		let button = ((this.buttons.querySelector('.spoticon-pause-16') || this.buttons.querySelector('.spoticon-play-16')) as HTMLElement);
 
 		if (button) {
@@ -145,13 +172,22 @@ class SpotifyPlayer extends Player {
 	}
 
 	next(): void {
+		if (this.buttons == null) {
+			return;
+		}
+
 		let button = (this.buttons.querySelector('.spoticon-skip-forward-16') as HTMLElement);
 
 		if (button) {
 			button.click();
 		}
 	}
+
 	previous(): void {
+		if (this.buttons == null) {
+			return;
+		}
+
 		let button = (this.buttons.querySelector('.spoticon-skip-back-16') as HTMLElement);
 
 		if (button) {
@@ -160,7 +196,7 @@ class SpotifyPlayer extends Player {
 	}
 }
 
-{
+window.addEventListener('load', (_) => {
 	let player = new SpotifyPlayer();
 	player.init();
-}
+});

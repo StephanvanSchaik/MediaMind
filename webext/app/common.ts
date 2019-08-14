@@ -20,8 +20,11 @@ export abstract class Player {
 	port: browser.runtime.Port;
 	constructor(portName: string) {
 		this.info = new PlayerInfo("Stopped", "", [], null, false, false, false, false);
-		this.port = browser.runtime.connect(null, { name: portName });
-		this.port.onMessage.addListener((command: Command) => {
+		this.port = browser.runtime.connect(undefined, { name: portName });
+
+		this.port.onMessage.addListener((response: object) => {
+			let command = response as Command;
+
 			switch (command.command) {
 				case "Play":
 					this.play();

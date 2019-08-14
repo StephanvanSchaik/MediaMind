@@ -2,7 +2,8 @@ import { PlaybackStatus, PlayerInfo } from './common';
 
 export class PlayerPort {
 	public status: PlaybackStatus = "Stopped";
-	public lastPlayTime: DOMHighResTimeStamp;
+	public lastPlayTime: DOMHighResTimeStamp = 0;
+
 	constructor(
 		public port: browser.runtime.Port,
 		public category: string) {
@@ -20,17 +21,19 @@ export type Command =
 
 let nativePort = browser.runtime.connectNative("com.synkhronix.media_mind");
 
-let playerPorts: PlayerPort[] = [];
+let playerPorts: Set<PlayerPort> = new Set();
 
-nativePort.onMessage.addListener((command: Command) => {
+nativePort.onMessage.addListener((response: object) => {
+	let command = response as Command;
+
 	switch (command.command) {
 		case "Play":
 		case "Pause":
 		case "PlayPause":
 		case "Next":
 		case "Previous":
-			playerPorts.sort((a, b) => b.lastPlayTime - a.lastPlayTime);
-			playerPorts[0].port.postMessage(command);
+			let sortedPorts = Array.from(playerPorts).sort((a, b) => b.lastPlayTime - a.lastPlayTime);
+			sortedPorts[0].port.postMessage(command);
 			break;
 		case "Raise":
 			console.warn("NYI: Raise");
@@ -57,7 +60,7 @@ function updateData(playerPort: PlayerPort, info: PlayerInfo) {
 
 		nativePort.postMessage(command);
 	} else {
-		if (!playerPorts.some((pp) => pp.status == 'Playing')) {
+		if (!Array.from(playerPorts).some((pp) => pp.status == 'Playing')) {
 			let command: Command = {
 				command: "Update",
 				data: info
@@ -73,13 +76,14 @@ function updateData(playerPort: PlayerPort, info: PlayerInfo) {
 browser.runtime.onConnect.addListener((port) => {
 	let pp = new PlayerPort(port, port.name);
 
-	playerPorts[port.sender.tab.id] = pp;
+	playerPorts.add(pp);
 
-	port.onMessage.addListener((info: PlayerInfo) => {
+	port.onMessage.addListener((response: object) => {
+		let info = response as PlayerInfo;
 		updateData(pp, info);
 	});
 
 	port.onDisconnect.addListener(() => {
-		delete playerPorts[port.sender.tab.id];
+		playerPorts.delete(pp);
 	})
 });

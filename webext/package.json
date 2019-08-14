@@ -14,5 +14,8 @@
 		"webextension-polyfill-ts": "^0.9.1",
 		"webextension-toolbox": "latest",
 		"@types/firefox-webext-browser": "^67.0.1"
+	},
+	"dependencies": {
+		"npm": "^6.10.3"
 	}
 }

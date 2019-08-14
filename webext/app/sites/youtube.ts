@@ -1,52 +1,51 @@
 import { Player } from '../common';
 
 class YoutubePlayer extends Player {
-	video: HTMLVideoElement;
-	next_btn: Element;
+	video: HTMLVideoElement | null = null;
+	next_btn: Element | null = null;
 
 	constructor() {
 		super("youtube");
 	}
 
 	init(): void {
-		let pageManager = document.getElementById('page-manager');
 		let watchFlexy = document.getElementsByTagName('ytd-watch-flexy')[0];
 
 		if (watchFlexy == null) {
-			this.waitForElement(pageManager, (el) => {
-				return el.nodeName == 'YTD-WATCH-FLEXY';
-			}, this.addWatchFlexyObserver.bind(this))
-		} else {
-			this.addWatchFlexyObserver(watchFlexy);
+			console.error('no element "ytd-watch-flexy"');
+			return;
 		}
+
+		this.addWatchFlexyObserver(watchFlexy);
 	}
 
 	addWatchFlexyObserver(watchFlexy: Element) {
-		let infoContents = document.getElementById('info-contents');
-		let infoRenderer = infoContents.querySelector('ytd-video-primary-info-renderer');
+		//let infoContents = document.getElementById('info-contents');
+		let infoRenderer = document.querySelector('ytd-video-primary-info-renderer');
 
 		if (infoRenderer == null) {
-			this.waitForElement(infoContents, (el) => {
-				return el.nodeName == 'YTD-VIDEO-PRIMARY-INFO-RENDERER';
-			}, this.addTitleObserver.bind(this))
-		} else {
-			this.addTitleObserver(infoRenderer);
+			console.error('no element "ytd-video-primary-info-renderer"');
+			return;
 		}
 
+		this.addTitleObserver(infoRenderer);
+
 		let videoContainer = watchFlexy.querySelector('ytd-player > div');
+
+		if (videoContainer == null) {
+			console.error('no element "ytd-player > div"');
+			return;
+		}
+
 		let video = videoContainer.querySelector('video') as HTMLVideoElement;
 
 		if (video == null) {
-			this.waitForElement(videoContainer, (el) => {
-				return el.id == 'movie_player';
-			}, () => {
-				this.attachVideoEvents(videoContainer.querySelector('video') as HTMLVideoElement)
-				this.attachControls();
-			});
-		} else {
-			this.attachVideoEvents(video);
-			this.attachControls();
+			console.error('no element "video"');
+			return;
 		}
+
+		this.attachVideoEvents(video);
+		this.attachControls();
 	}
 
 	attachControls() {
@@ -80,11 +79,17 @@ class YoutubePlayer extends Player {
 	addTitleObserver(infoRenderer: Element) {
 		let titleElement = infoRenderer.querySelector('h1.title > yt-formatted-string');
 
+		if (titleElement == null) {
+			console.error('no element "h1.title > yt-formatted-string"');
+			return;
+		}
+
 		let titleObserver = new MutationObserver((mutations) => {
 			mutations.forEach((mutation) => {
 				if (mutation.type == 'childList') {
 					if (mutation.addedNodes.length > 0
-						&& mutation.addedNodes[0].nodeName == '#text') {
+						&& mutation.addedNodes[0].nodeName == '#text'
+						&& mutation.target.textContent != null) {
 						this.set({
 							title: mutation.target.textContent
 						});
@@ -113,24 +118,38 @@ class YoutubePlayer extends Player {
 			});
 		}
 
-		this.set({
-			title: titleElement.textContent
-		});
+		if (titleElement.textContent) {
+			this.set({
+				title: titleElement.textContent
+			});
+		}
 	}
 
 	play(): void {
+		if (this.video == null) {
+			return;
+		}
+
 		if (this.video.paused) {
 			this.video.play();
 		}
 	}
 
 	pause(): void {
+		if (this.video == null) {
+			return;
+		}
+
 		if (!this.video.paused) {
 			this.video.pause();
 		}
 	}
 
 	playPause(): void {
+		if (this.video == null) {
+			return;
+		}
+
 		if (this.video.paused) {
 			this.video.play();
 		} else {
@@ -139,6 +158,10 @@ class YoutubePlayer extends Player {
 	}
 
 	next(): void {
+		if (this.video == null) {
+			return;
+		}
+
 		let btn = (this.next_btn as HTMLElement);
 
 		if (btn) {
@@ -151,7 +174,7 @@ class YoutubePlayer extends Player {
 	}
 }
 
-{
+window.addEventListener('load', (_) => {
 	let player = new YoutubePlayer();
 	player.init();
-}
+});
