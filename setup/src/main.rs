@@ -45,6 +45,27 @@ fn write_manifest(path: &Path, manifest: Manifest) -> io::Result<()> {
     Ok(())
 }
 
+#[cfg(target_os = "windows")]
+fn install_regkey(browser: String, path: &PathBuf) -> io::Result<()> {
+    let hlm = RegKey::predef(HKEY_LOCAL_MACHINE);
+    let mut reg_path: PathBuf = PathBuf::new();
+
+    reg_path.push("Software".to_string());
+    reg_path.push(browser);
+    reg_path.push("NativeMessagingHosts".to_string());
+    reg_path.push("com.synkhronix.media_mind".to_string());
+
+    let (key, _) = hlm.create_subkey(reg_path.as_path())?;
+
+    println!("setting registry key {} to {}", reg_path.display(), path.display());
+    key.set_value("", &path.as_path().to_str().unwrap().to_string())?;
+}
+
+#[cfg(target_os = "linux")]
+fn install_regkey(_browser: String, _path: &PathBuf) -> io::Result<()> {
+    Ok(())
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
 
@@ -146,22 +167,7 @@ fn main() -> io::Result<()> {
 
         println!("writing manifest to {}", path.display());
         write_manifest(path.as_path(), manifest)?;
-
-        if cfg!(target_os = "windows") {
-            let hlm = RegKey::predef(HKEY_LOCAL_MACHINE);
-
-            let mut reg_path: PathBuf = PathBuf::new();
-
-            reg_path.push("Software".to_string());
-            reg_path.push(browser);
-            reg_path.push("NativeMessagingHosts".to_string());
-            reg_path.push("com.synkhronix.media_mind".to_string());
-
-            let (key, _) = hlm.create_subkey(reg_path.as_path())?;
-
-            println!("setting registry key {} to {}", reg_path.display(), path.display());
-            key.set_value("", &path.as_path().to_str().unwrap().to_string())?;
-        }
+        install_regkey(browser.to_string(), &path)?;
     }
 
     Ok(())
