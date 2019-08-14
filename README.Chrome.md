@@ -25,7 +25,7 @@ Installation
 6. Run the setup assistant and replace `<extension ID>` with the extension ID:
 ```
 cd setup
-./target/release/setup ../native/target/release/media_mind chrome://<extension
+./target/release/setup ../native/target/release/media_mind chrome-extension://<extension
 ID>/
 ```
 7. Reload the Chrome extension.
