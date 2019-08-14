@@ -199,4 +199,4 @@ class SpotifyPlayer extends Player {
 window.addEventListener('load', (_) => {
 	let player = new SpotifyPlayer();
 	player.init();
-});
+}, true);

@@ -177,4 +177,4 @@ class YoutubePlayer extends Player {
 window.addEventListener('load', (_) => {
 	let player = new YoutubePlayer();
 	player.init();
-});
+}, true);
