@@ -8,18 +8,29 @@ class SpotifyPlayer extends Player {
 	}
 
 	init(): void {
-		let nowPlayingBarLeft: Element | null =
-			document.querySelector('.now-playing-bar__left');
+		let nowPlayingBarLeft = document.querySelector('.now-playing-bar__left');
+		let self = this;
 
 		if (nowPlayingBarLeft == null) {
-			console.error('no element ".now-player-bar__left"');
-			return;
-		}
+			var observer = new MutationObserver(function (mutations, observer) {
+				let nowPlayingBarLeft = document.querySelector('.now-playing-bar__left');
 
-		this.addMainObserver(nowPlayingBarLeft);
+				if (nowPlayingBarLeft != null) {
+					self.setup(nowPlayingBarLeft);
+					observer.disconnect();
+				}
+			});
+
+			observer.observe(document, {
+				childList: true,
+				subtree: true
+			});
+		} else {
+			this.setup(nowPlayingBarLeft);
+		}
 	}
 
-	addMainObserver(nowPlayingBarLeft: Element) {
+	setup(nowPlayingBarLeft: Element) {
 		this.buttons = document.querySelector('#main .player-controls__buttons');
 
 		if (this.buttons == null) {
@@ -196,7 +207,6 @@ class SpotifyPlayer extends Player {
 	}
 }
 
-window.addEventListener('load', (_) => {
-	let player = new SpotifyPlayer();
-	player.init();
-}, true);
+console.log('Spotify');
+let player = new SpotifyPlayer();
+player.init();

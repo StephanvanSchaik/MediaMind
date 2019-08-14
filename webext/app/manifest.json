@@ -26,6 +26,7 @@
 			"matches": [
 				"*://open.spotify.com/*"
 			],
+			"run_at": "document_end",
 			"js": [
 				"common.js",
 				"sites/spotify.js"
@@ -35,6 +36,7 @@
 			"matches": [
 				"*://*.youtube.com/*"
 			],
+			"run_at": "document_end",
 			"js": [
 				"common.js",
 				"sites/youtube.js"
@@ -44,6 +46,7 @@
 			"matches": [
 				"*://*.soundcloud.com/*"
 			],
+			"run_at": "document_end",
 			"js": [
 				"common.js",
 				"sites/soundcloud.js"

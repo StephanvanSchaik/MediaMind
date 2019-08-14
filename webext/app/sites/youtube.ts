@@ -10,16 +10,26 @@ class YoutubePlayer extends Player {
 
 	init(): void {
 		let watchFlexy = document.getElementsByTagName('ytd-watch-flexy')[0];
+		let self = this;
 
-		if (watchFlexy == null) {
-			console.error('no element "ytd-watch-flexy"');
-			return;
-		}
+		var observer = new MutationObserver(function (mutations, observer) {
+			let watchFlexy = document.getElementsByTagName('ytd-watch-flexy')[0];
+			let video = document.querySelector('video');
+			let infoRenderer = document.querySelector('ytd-video-primary-info-renderer');
 
-		this.addWatchFlexyObserver(watchFlexy);
+			if (watchFlexy && video && infoRenderer) {
+				self.setup(watchFlexy);
+				observer.disconnect();
+			}
+		});
+
+		observer.observe(document, {
+			childList: true,
+			subtree: true
+		});
 	}
 
-	addWatchFlexyObserver(watchFlexy: Element) {
+	setup(watchFlexy: Element) {
 		//let infoContents = document.getElementById('info-contents');
 		let infoRenderer = document.querySelector('ytd-video-primary-info-renderer');
 
@@ -174,7 +184,6 @@ class YoutubePlayer extends Player {
 	}
 }
 
-window.addEventListener('load', (_) => {
-	let player = new YoutubePlayer();
-	player.init();
-}, true);
+console.log('YouTube');
+let player = new YoutubePlayer();
+player.init();

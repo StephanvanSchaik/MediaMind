@@ -9,12 +9,29 @@ class SoundCloudPlayer extends Player {
 
 	init(): void {
 		let playControls = document.querySelector('.playControls');
+		let self = this;
 
 		if (playControls == null) {
-			console.error('no element ".playControls"');
-			return;
-		}
+			var observer = new MutationObserver(function (mutations, observer) {
+				let playControls = document.querySelector('.playControls');
 
+				if (playControls != null) {
+					self.setup(playControls);
+					observer.disconnect();
+				}
+			});
+
+			observer.observe(document, {
+				childList: true,
+				subtree: true
+			});
+		} else {
+			this.setup(playControls);
+		}
+	}
+
+	setup(playControls: Element): void {
+		console.log('SoundCloud setup');
 		this.buttons = playControls.querySelector('.playControls__elements');
 
 		if (this.buttons == null) {
@@ -189,8 +206,6 @@ class SoundCloudPlayer extends Player {
 	}
 }
 
-window.addEventListener('load', (_) => {
-	console.log('SoundCloud');
-	let player = new SoundCloudPlayer();
-	player.init();
-}, true);
+console.log('SoundCloud');
+let player = new SoundCloudPlayer();
+player.init();
