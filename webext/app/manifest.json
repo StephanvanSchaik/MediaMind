@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 
-	"name": "com.synkhronix.media_mind",
+	"name": "Media Mind",
 	"version": "0.1",
 	"description": "Allows you to use the multimedia keys of your keyboard to control media playback.",
 	"author": "Stephan van Schaik <stephan@synkhronix.com>",
