@@ -17,6 +17,7 @@ on your keyboard to control the media playback in your browser.
 
  * YouTube (https://youtube.com)
  * Spotify (https://open.spotify.com)
+ * SoundCloud (https://soundcloud.com)
 
 # Prerequisites
 
